@@ -8,6 +8,9 @@ from osgeo import ogr
 import tensorflow as tf
 import numpy as np
 import geopandas as gpd
+import os
+import random
+
 
 
 driverTiff = gdal.GetDriverByName('GTiff')
@@ -56,6 +59,8 @@ def target_variable (data, trainDirectory, testDirectory, tarinPercent=0.8):
     print('gdf shape', gdf.shape, 'training', gdf_train.shape, 'test', gdf_test.shape)
     gdf_train.to_file(trainDirectory)
     gdf_test.to_file(testDirectory)
+    print('train data saved to: {}'.format(trainDirectory))
+    print('test data saved to: {}'.format(testDirectory))
     
 
 # Data rasterization and extraction of training and testing dataset
@@ -105,12 +110,38 @@ def tfPipline (feature, label, shuffle=True, repeat=False, BUFFER_SIZE=10000, BA
 
     return dataset
 
+def cnn_input(dataset):
+    sample_size = dataset.shape[0]
+    time_steps = dataset.shape[1]
+    input_dimension = 1
+    dataset = dataset.reshape(sample_size, time_steps, input_dimension)
+
+    return dataset
+
+def reset_random_seeds():
+   os.environ['PYTHONHASHSEED']=str(1)
+   tf.random.set_seed(1)
+   np.random.seed(1)
+   random.seed(1)
+
+
+def write_raster(RSData, modelPrediction, band_data, savedDirectory):
+    RS_ds = gdal.Open(RSData)
+    cols = band_data.shape[1]
+    rows = band_data.shape[0]
+    modelPrediction.astype(np.float16)
+    driver = gdal.GetDriverByName("gtiff")
+    outdata = driver.Create(savedDirectory, cols, rows, 1, gdal.GDT_Float32)
+    outdata.SetGeoTransform(RS_ds.GetGeoTransform())  ##sets same geotransform as input
+    outdata.SetProjection(RS_ds.GetProjection())  ##sets same projection as input
+    outdata.GetRasterBand(1).WriteArray(modelPrediction)
+    outdata.FlushCache()  ##saves to disk!!
+    print('Image saved to: {}'.format(savedDirectory))
+
 def main():
     print("This is the main code to test above functions")
-
     landsat = 'D:/programes/dataset/aster-finalstack2.tif'
     band_data1, img_as_array1 = rs_preprocessing(landsat, reshape=True)
-
     train_ds = 'D:/programes/qgis/train_reg.shp'
     x_train, y_train = dataFitting(landsat, band_data1, train_ds)
     print(x_train)
@@ -118,5 +149,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
