@@ -9,12 +9,9 @@ import tensorflow as tf
 import numpy as np
 import geopandas as gpd
 
-def main():
-    driverTiff = gdal.GetDriverByName('GTiff')
-    print("100000ths")
 
-if __name__ == '__main__':
-    main()
+driverTiff = gdal.GetDriverByName('GTiff')
+
 
 
 
@@ -42,8 +39,7 @@ def rs_preprocessing (data, reshape=True):
     else:
         return band_data
 
-landsat = 'D:/programes/dataset/aster-finalstack2.tif'
-band_data1, img_as_array1 = rs_preprocessing(landsat, reshape=True)
+
 
 
 
@@ -93,11 +89,7 @@ def dataFitting (RSData, band_data, SHfile):
 
     return x, y
 
-train_ds = 'D:/programes/qgis/train_reg.shp'
 
-x_train, y_train = dataFitting(landsat, band_data1, train_ds)
-print(x_train)
-print(y_train)
 
 def tfPipline (feature, label, shuffle=True, repeat=False, BUFFER_SIZE=10000, BATCH_SIZE=64):
     if label == '':
@@ -113,7 +105,18 @@ def tfPipline (feature, label, shuffle=True, repeat=False, BUFFER_SIZE=10000, BA
 
     return dataset
 
+def main():
+    print("This is the main code to test above functions")
 
+    landsat = 'D:/programes/dataset/aster-finalstack2.tif'
+    band_data1, img_as_array1 = rs_preprocessing(landsat, reshape=True)
 
+    train_ds = 'D:/programes/qgis/train_reg.shp'
+    x_train, y_train = dataFitting(landsat, band_data1, train_ds)
+    print(x_train)
+    print(y_train)
+
+if __name__ == '__main__':
+    main()
 
 
