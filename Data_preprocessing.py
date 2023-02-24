@@ -53,7 +53,17 @@ def rs_preprocessing (data, reshape=True):
 
 def target_variable (data, trainDirectory, testDirectory, tarinPercent=0.8):
     gdf = gpd.read_file(data)
-    gdf['raster'] = np.where(gdf['value'] == 0, 1,2)
+    # def condition(dataframe):
+    #     if dataframe['value'] == 1:
+    #         value = 3
+    #     elif dataframe['value'] == 0.5:
+    #         value = 2
+    #     else:
+    #         value = 1
+    #     return value
+    # gdf['raster'] = gdf.apply(condition, axis=1)
+    gdf['raster'] = np.where(gdf['Value'] == 0, 1, 2)
+    print(gdf.head)
     gdf_train = gdf.sample(frac=tarinPercent)
     gdf_test = gdf.drop(gdf_train.index)
     print('gdf shape', gdf.shape, 'training', gdf_train.shape, 'test', gdf_test.shape)
@@ -61,7 +71,7 @@ def target_variable (data, trainDirectory, testDirectory, tarinPercent=0.8):
     gdf_test.to_file(testDirectory)
     print('train data saved to: {}'.format(trainDirectory))
     print('test data saved to: {}'.format(testDirectory))
-    
+
 
 # Data rasterization and extraction of training and testing dataset
 # The folowing function accept
@@ -89,10 +99,21 @@ def dataFitting (RSData, band_data, SHfile):
     idx = np.nonzero(truth)
     x = band_data[idx]
     y = truth[idx] - 1
+    # def condition(dataframe):
+    #     if dataframe == 3:
+    #         value = 1
+    #     elif dataframe == 2:
+    #         value = 0.5
+    #     else:
+    #         value = 0
+    #     return value
+    # y = list(map(condition, truth[idx]))
     print('Our X matrix is sized: {sz}'.format(sz=x.shape))
     print('Our y array is sized: {sz}'.format(sz=np.shape(y)))
 
     return x, y
+
+# def get_map_prediction()
 
 
 
