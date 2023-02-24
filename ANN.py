@@ -48,15 +48,32 @@ x_test, y_test = dataFitting(remote_sensing_data,band_data, testDirectory)
 
 reset_random_seeds()
 
-model = tf.keras.Sequential([
-    tf.keras.layers.Flatten(input_shape=(42,)),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dropout(0.5),
-    tf.keras.layers.Dense(1, activation='sigmoid')
-])
+#Defining the model structure as function to be used for Grid Search
+def define_model (neurons_num=64, activation='relu', learning_rate=0.01):
+    model = Sequential()
+    model.add(Flatten(input_shape=(16,)))
+    model.add(Dense(neurons_num, activation=activation))
+    model.add(Dense(neurons_num, activation=activation))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation='sigmoid'))
+
+    optimizing = RMSprop(learning_rate=learning_rate)
+    model.compile(loss='binary_crossentropy', optimizer=optimizing, metrics=['accuracy'])
+    return model
+
+#parameters selection
+epochs = 200
+# batch_size = [2, 5, 10, 14, 18, 20, 30, 35]
+batch_size = [35]
+learning_rate = [0.01, 0.001]
+# learning_rate = [0.0001, 0.001, 0.01, 0.1]
+# activation = ['relu', 'sigmoid']
+neurons_num = [4, 8, 16, 32]
+# neurons_num = [32]
+
+model1 = KerasRegressor(model=define_model, epochs=epochs, batch_size=batch_size, neurons_num=neurons_num,
+                        learning_rate=learning_rate, verbose=1)
+
 
 param_grid = dict(neurons_num=neurons_num, learning_rate=learning_rate, batch_size=batch_size)
 grid = GridSearchCV(estimator=model1, param_grid=param_grid, scoring='neg_mean_squared_error', n_jobs=1, cv=5)
